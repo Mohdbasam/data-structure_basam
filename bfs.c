@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#define MAX 6
+#include<stdio.h>
+#include<stdlib.h>
+#include<stdbool.h>
+#define MAX 10
 int vertex_count =0;
 struct vertex{
 	char data;
@@ -9,20 +9,22 @@ struct vertex{
 };
 struct vertex *graph[MAX];
 int adj_matrix[MAX][MAX];
-int stack[MAX];
-int top = -1;
-void push(int data){
-	stack[++top]=data;
-}
-int pop(){
-	return stack[top--];
-}
 
-int peek(){
-	return stack[top];
+int queue[MAX];
+int rear=-1;
+int front=0;
+int queue_count=0;
+
+void enqueue(int data){
+	queue[++rear]=data;
+	queue_count++;
 }
-bool is_stack_empty(){
-	return top == -1;
+int dequeue(){
+	queue_count--;
+	return queue[front++];
+}
+bool is_queue_empty(){
+	return queue_count == 0;
 }
 void add_vertex(char data){
 	struct vertex *new = (struct vertex*)malloc(sizeof(struct vertex));
@@ -45,29 +47,30 @@ int adj_vertex(int vertex_get){
 	return -1;
 }
 void display_vertex(int pos){
-	printf("%c",graph[pos]->data);
+	printf("%c -> ",graph[pos]->data);
 }
-void dfs(){
+
+void bfs(struct vertex *new,int start){
+	if(!new){
+		printf("\nNothing to display\n");
+		return;
+	}   
 	int i;
 	int unvisited;
 	printf("\n|||||||||||||||||||||||||||||||\n");
-	graph[0]->visited =true;
-	display_vertex(0);
-	push(0);
-	
-	while(!is_stack_empty()){
-		int unvisited = adj_vertex(peek());
-		
-	    if(unvisited == -1){
-	    	pop();
-	    }
-	    else{
-	    	graph[unvisited]->visited = true;
+	new->visited =true;
+	display_vertex(start);
+	enqueue(start);
+	while(!is_queue_empty()){
+		int pop_vertex = dequeue();
+		while((unvisited = adj_vertex(pop_vertex))!=-1){
+			graph[unvisited]->visited = true;
 			display_vertex(unvisited);
-			push(unvisited);
-	    }
+			enqueue(unvisited);
+		}
 	}
 	printf("\n|||||||||||||||||||||||||||||||\n");
+	
 	for(i=0;i<vertex_count;i++){
 		graph[i]->visited = false;
 	}
@@ -85,8 +88,9 @@ int main(){
 	char data;
 	int edge_1,edge_2;
 	int i, j;
-    for(i = 0; i < MAX; i++)  
-      for(j = 0; j < MAX; j++) 
+	int start;
+    for(i = 0; i < MAX; i++) 
+      for(j = 0; j < MAX; j++)
          adj_matrix[i][j] = 0;
 	do{
 		printf("\n1)Add vertex \n2)Create edge \n3)Traversal \n0)Exit \nChoose option :: ");
@@ -111,7 +115,9 @@ int main(){
 				}
 				break;
 			case 3:
-				dfs();
+				printf("\nEnter starting vertex position : ");
+				scanf("%d",&start);
+				bfs(graph[start],start);
 				break;
 			default:
 				printf("\nInvalid option try again !! ...");
